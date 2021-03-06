@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Só precisa informar, caso os seus pacotes não estejam no pacote principal
 @EntityScan(basePackages = {"com.github.hugovallada.gvendas.entidades"})
 @EnableJpaRepositories(basePackages = {"com.github.hugovallada.gvendas.repositorio"})
-@ComponentScan(basePackages = {"com.github.hugovallada.gvendas.servico", "com.github.hugovallada.gvendas.controlador"})
+@ComponentScan(basePackages = {"com.github.hugovallada.gvendas.servico", "com.github.hugovallada.gvendas.controlador", "com.github.hugovallada.gvendas.excecao"})
 @SpringBootApplication
 public class GvendasApplication {
 
