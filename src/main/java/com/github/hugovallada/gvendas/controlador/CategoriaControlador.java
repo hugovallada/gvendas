@@ -25,27 +25,27 @@ public class CategoriaControlador {
         this.servico = servico;
     }
 
-    @ApiOperation(value = "Listar")
+    @ApiOperation(value = "Listar", nickname = "listarTodas")
     @GetMapping
     public List<Categoria> listarTodas() {
         return servico.listarTodas();
     }
 
-    @ApiOperation(value = "Listar por código")
+    @ApiOperation(value = "Listar por código", nickname = "buscarPorCódigo")
     @GetMapping("/{codigo}")
     public ResponseEntity<Optional<Categoria>> buscarPorCodigo(@PathVariable Long codigo) {
         Optional<Categoria> opt = servico.buscarPorId(codigo);
         return opt.isPresent() ? ResponseEntity.ok().body(opt) : ResponseEntity.notFound().build();
     }
 
-    @ApiOperation(value = "Salvar")
+    @ApiOperation(value = "Salvar", nickname = "salvar")
     @PostMapping
     public ResponseEntity<Categoria> salvar(@RequestBody @Valid Categoria categoria) {
         Categoria categoriaSalva = servico.salvar(categoria);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoriaSalva);
     }
 
-    @ApiOperation(value = "Atualizar")
+    @ApiOperation(value = "Atualizar", nickname = "atualizar")
     @PutMapping("/{codigo}")
     public ResponseEntity<Categoria> atualizar(
             @PathVariable Long codigo,
@@ -56,7 +56,7 @@ public class CategoriaControlador {
         return ResponseEntity.ok().body(categoriaAtualizada);
     }
 
-    @ApiOperation(value = "Deletar")
+    @ApiOperation(value = "Deletar", nickname = "deletar")
     @DeleteMapping("/{codigo}")
     public ResponseEntity<Void> deletar(@PathVariable Long codigo) {
         servico.deletar(codigo);

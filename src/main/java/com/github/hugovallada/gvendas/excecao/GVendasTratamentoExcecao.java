@@ -1,5 +1,6 @@
 package com.github.hugovallada.gvendas.excecao;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,16 @@ public class GVendasTratamentoExcecao extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmptyResultDataAccessException.class)
     public ResponseEntity<Object> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex, WebRequest request) {
+        String msgUsuario = "Não foi possível encontrar um objeto com o código passado";
+        String msgDesenvolvedor = ex.toString();
+
+        List<Erro> erros = Arrays.asList(new Erro(msgUsuario, msgDesenvolvedor));
+
+        return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
         String msgUsuario = "Não foi possível encontrar uma categoria com o código passado";
         String msgDesenvolvedor = ex.toString();
 
