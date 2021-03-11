@@ -10,7 +10,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@ApiModel("Produto Retorno")
+@ApiModel("Produto Retorno DTO")
 @Getter
 @Setter
 @NoArgsConstructor

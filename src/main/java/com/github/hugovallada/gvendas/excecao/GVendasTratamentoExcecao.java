@@ -42,7 +42,7 @@ public class GVendasTratamentoExcecao extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
-        String msgUsuario = "Não foi possível encontrar uma categoria com o código passado";
+        String msgUsuario = ex.getMessage();
         String msgDesenvolvedor = ex.toString();
 
         List<Erro> erros = Arrays.asList(new Erro(msgUsuario, msgDesenvolvedor));
