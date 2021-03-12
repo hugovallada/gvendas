@@ -1,15 +1,16 @@
 package com.github.hugovallada.gvendas.controlador;
 
 import com.github.hugovallada.gvendas.dto.ClienteVendaResponseDTO;
+import com.github.hugovallada.gvendas.dto.VendaRequestDTO;
 import com.github.hugovallada.gvendas.servico.VendaServico;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @Api(tags = "Venda")
 @RestController
@@ -38,6 +39,16 @@ public class VendaControlador {
             @PathVariable Long codigoVenda
     ) {
         return ResponseEntity.ok().body(vendaServico.listarVendaPorCodigo(codigoVenda));
+    }
+
+    @ApiOperation(value = "Salvar Vendas", nickname = "salvarCliente")
+    @PostMapping("/cliente/{codigoCliente}")
+    public ResponseEntity<ClienteVendaResponseDTO> salvarVenda(
+            @PathVariable Long codigoCliente,
+            @RequestBody @Valid VendaRequestDTO vendaRequestDTO
+    ) {
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(vendaServico.salvar(codigoCliente, vendaRequestDTO));
     }
 
 

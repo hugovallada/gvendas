@@ -1,10 +1,12 @@
 package com.github.hugovallada.gvendas.servico;
 
 import com.github.hugovallada.gvendas.dto.ClienteVendaResponseDTO;
-import com.github.hugovallada.gvendas.dto.ItemVendaResponseDTO;
+import com.github.hugovallada.gvendas.dto.ItemVendaRequestDTO;
+import com.github.hugovallada.gvendas.dto.VendaRequestDTO;
 import com.github.hugovallada.gvendas.dto.VendaResponseDTO;
 import com.github.hugovallada.gvendas.entidades.Cliente;
 import com.github.hugovallada.gvendas.entidades.ItemVenda;
+import com.github.hugovallada.gvendas.entidades.Produto;
 import com.github.hugovallada.gvendas.entidades.Venda;
 import com.github.hugovallada.gvendas.excecao.RegraNegocioException;
 import com.github.hugovallada.gvendas.repositorio.ItemVendaRepositorio;
@@ -18,17 +20,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class VendaServico {
+public class VendaServico extends AbstractVendaServico {
 
     private ClienteServico clienteServico;
     private ItemVendaRepositorio itemVendaRepositorio;
     private VendaRepositorio vendaRepositorio;
+    private ProdutoServico produtoServico;
 
     @Autowired
-    public VendaServico(ClienteServico clienteServico, VendaRepositorio vendaRepositorio, ItemVendaRepositorio itemVendaRepositorio) {
+    public VendaServico(ClienteServico clienteServico, VendaRepositorio vendaRepositorio, ItemVendaRepositorio itemVendaRepositorio, ProdutoServico produtoServico) {
         this.clienteServico = clienteServico;
         this.vendaRepositorio = vendaRepositorio;
         this.itemVendaRepositorio = itemVendaRepositorio;
+        this.produtoServico = produtoServico;
     }
 
     public ClienteVendaResponseDTO listarVendaPorCliente(Long codigoCliente) {
@@ -36,7 +40,7 @@ public class VendaServico {
 
         List<VendaResponseDTO> vendas = vendaRepositorio.findByClienteCodigo(codigoCliente)
                 .stream()
-                .map(this::converterParaVendaDto)
+                .map(venda -> converterParaVendaDto(venda, itemVendaRepositorio.findByVendaCodigo(venda.getCodigo())))
                 .collect(Collectors.toList());
 
         return new ClienteVendaResponseDTO(cliente.getNome(), vendas);
@@ -45,7 +49,48 @@ public class VendaServico {
 
     public ClienteVendaResponseDTO listarVendaPorCodigo(Long codigoVenda) {
         Venda venda = validarVendaExiste(codigoVenda);
-        return new ClienteVendaResponseDTO(venda.getCliente().getNome(), Arrays.asList(converterParaVendaDto(venda)));
+        return new ClienteVendaResponseDTO(venda.getCliente().getNome(), Arrays.asList(converterParaVendaDto(venda, itemVendaRepositorio.findByVendaCodigo(venda.getCodigo()))));
+    }
+
+    public ClienteVendaResponseDTO salvar(Long codigoCliente, VendaRequestDTO venda) {
+        Cliente cliente = validarClienteVendaExiste(codigoCliente);
+        validarProdutoExiste(venda.getItensVendaDto());
+
+        Venda vendaSalva = salvarVenda(cliente, venda);
+
+        return new ClienteVendaResponseDTO(
+                vendaSalva.getCliente().getNome(),
+                Arrays.asList(converterParaVendaDto(vendaSalva, itemVendaRepositorio.findByVendaCodigo(vendaSalva.getCodigo())))
+        );
+    }
+
+    private Venda salvarVenda(Cliente cliente, VendaRequestDTO dto) {
+        Venda vendaSalva = vendaRepositorio.save(new Venda(dto.getData(), cliente));
+        dto.getItensVendaDto()
+                .stream()
+                .map(itemVendaRequestDTO -> converterParaItemVenda(itemVendaRequestDTO, vendaSalva))
+                .forEach(itemVendaRepositorio::save);
+
+        return vendaSalva;
+
+    }
+
+    private ItemVenda converterParaItemVenda(ItemVendaRequestDTO dto, Venda venda) {
+        ItemVenda itemVenda = new ItemVenda();
+        Produto produto = new Produto();
+
+        produto.setCodigo(dto.getCodigoProduto());
+
+        itemVenda.setVenda(venda);
+        itemVenda.setQuantidade(dto.getQuantidade());
+        itemVenda.setPrecoVendido(dto.getPrecoVendido());
+        itemVenda.setProduto(produto);
+
+        return itemVenda;
+    }
+
+    private void validarProdutoExiste(List<ItemVendaRequestDTO> itensVendaDto) {
+        itensVendaDto.forEach(item -> produtoServico.validarProdutoExiste(item.getCodigoProduto()));
     }
 
     private Venda validarVendaExiste(Long codigoVenda) {
@@ -67,19 +112,5 @@ public class VendaServico {
 
         return clienteOpt.get();
 
-    }
-
-    private VendaResponseDTO converterParaVendaDto(Venda venda) {
-        List<ItemVendaResponseDTO> itensVenda = itemVendaRepositorio.findByVendaCodigo(venda.getCodigo())
-                .stream()
-                .map(this::converterParaItemVendaDto)
-                .collect(Collectors.toList());
-
-        return new VendaResponseDTO(venda.getCodigo(), venda.getData(), itensVenda);
-
-    }
-
-    private ItemVendaResponseDTO converterParaItemVendaDto(ItemVenda itemVenda) {
-        return new ItemVendaResponseDTO(itemVenda.getCodigo(), itemVenda.getQuantidade(), itemVenda.getPrecoVendido(), itemVenda.getProduto().getCodigo(), itemVenda.getProduto().getDescricao());
     }
 }

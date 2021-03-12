@@ -22,4 +22,9 @@ public class Venda {
     @ManyToOne
     @JoinColumn(name = "codigo_cliente", referencedColumnName = "codigo")
     private Cliente cliente;
+
+    public Venda(LocalDate data, Cliente cliente) {
+        this.data = data;
+        this.cliente = cliente;
+    }
 }
