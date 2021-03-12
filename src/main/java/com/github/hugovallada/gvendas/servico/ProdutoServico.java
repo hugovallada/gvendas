@@ -90,4 +90,14 @@ public class ProdutoServico {
 
         return encontrado.get();
     }
+
+    protected Produto validarProdutoExiste(Long codigoProduto) {
+        Optional<Produto> encontrado = repositorio.findById(codigoProduto);
+
+        if (encontrado.isEmpty()) {
+            throw new RegraNegocioException(String.format("O produto de código %s não existe", codigoProduto));
+        }
+
+        return encontrado.get();
+    }
 }
